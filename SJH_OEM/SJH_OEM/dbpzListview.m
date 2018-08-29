@@ -66,6 +66,13 @@
 @property NSMutableArray *autoPackingParamArry;
 @property NSDictionary *dataDic;
 
+
+@property  NSTextField *IconsPath;
+@property NSTextField *LaunchImagesPath;
+@property NSButton *selectIconsPath;
+@property  NSButton *selectLaunchImagesPath;
+
+
 @end
 static dbpzListview *selectins= nil;
 @implementation dbpzListview
@@ -141,7 +148,7 @@ static dbpzListview *selectins= nil;
     [panel setAllowsMultipleSelection:NO];
     [panel setCanChooseDirectories:NO];
     [panel setCanChooseFiles:YES];
-    //    [panel setAllowedFileTypes:@[@"onecodego"]];
+    [panel setAllowedFileTypes:@[@"py"]];
     [panel setAllowsOtherFileTypes:YES];
     if ([panel runModal] == NSModalResponseOK) {
         NSString *path = [panel.URLs.firstObject path];
@@ -170,6 +177,93 @@ static dbpzListview *selectins= nil;
         
     }
 }
+
+-(void)selectIconsPath:(id)sender{
+     [[Youai_LOG shareSDK]printLog:@"进来了selectIconsPath"];
+    NSOpenPanel *panel = [NSOpenPanel openPanel];
+    //    [panel setDirectory:NSHomeDirectory()];
+    [panel setAllowsMultipleSelection:NO];
+    [panel setCanChooseDirectories:YES];
+    [panel setCanCreateDirectories:NO];
+    [panel setCanChooseFiles:NO];
+//    [panel setAllowedFileTypes:@[@"appiconset"]];
+   
+//    [panel setAllowsOtherFileTypes:NO];
+    if ([panel runModal] == NSModalResponseOK) {
+        NSString *path = [panel.URLs.firstObject path];
+        
+        [[Youai_LOG shareSDK]printLog:path];
+        
+        
+        
+        _IconsPath.stringValue=path;
+        
+    }
+}
+-(void)selectLaunchImagesPath:(id)sender{
+    [[Youai_LOG shareSDK]printLog:@"进来了selectLaunchImagesPath"];
+    NSOpenPanel *panel = [NSOpenPanel openPanel];
+    //    [panel setDirectory:NSHomeDirectory()];
+    [panel setAllowsMultipleSelection:NO];
+    [panel setCanChooseDirectories:YES];
+    [panel setCanCreateDirectories:NO];
+    [panel setCanChooseFiles:NO];
+//    [panel setAllowedFileTypes:@[@"launchimage"]];
+    
+//    [panel setAllowsOtherFileTypes:NO];
+    if ([panel runModal] == NSModalResponseOK) {
+        NSString *path = [panel.URLs.firstObject path];
+        
+        [[Youai_LOG shareSDK]printLog:path];
+        
+        
+        
+        _LaunchImagesPath.stringValue=path;
+        
+    }
+}
+
+-(BOOL)copyIcansOrLaunchImages:(NSString *)path andLaunchpath:(NSString *)launch andProjectPath:(NSString *)projectpath{
+    
+   
+        if ([[FileUtils shareSDK]checkIsDir:projectpath]) {
+            NSArray *all=[[FileUtils shareSDK]getAllDirOrFile:projectpath];
+             
+            [[Youai_LOG shareSDK]printLog:@"开始落"];
+            for (int i=0; i<all.count; i++) {
+                NSString *dir=[NSString stringWithFormat:@"%@/%@",projectpath,all[i]];
+//               [[Youai_LOG shareSDK]printLog:dir];
+                NSString *pool=[all[i] lastPathComponent];
+//                [[Youai_LOG shareSDK]printLog:pool];
+                if ([pool isEqualToString:@"Images.xcassets"]) {
+                     [[Youai_LOG shareSDK]printLog:@"找到Images.xcassets路径了"];
+                    [[Youai_LOG shareSDK]printLog:dir];
+                    NSString *iconpath=[NSString stringWithFormat:@"%@/AppIcon.appiconset",dir];
+                     NSString *launchpath=[NSString stringWithFormat:@"%@/LaunchImage.launchimage",dir];
+                    if ([[FileUtils shareSDK]checkIsDir:iconpath]&&[[FileUtils shareSDK]checkIsDir:path]&&[[path lastPathComponent]isEqualToString:@"AppIcon.appiconset"]) {
+                        if([[FileUtils shareSDK]removeFileOrDir:iconpath]){
+                            if([[FileUtils shareSDK]copyFileOrDir:path andto:iconpath]){
+                                 [[Youai_LOG shareSDK]printLog:@"修改Icons成功"];
+                            }
+                        }
+                    }
+                    if ([[FileUtils shareSDK]checkIsDir:launchpath]&&[[FileUtils shareSDK]checkIsDir:launch]&&[[launch lastPathComponent]isEqualToString:@"LaunchImage.launchimage"]) {
+                        if([[FileUtils shareSDK]removeFileOrDir:launchpath]){
+                            if([[FileUtils shareSDK]copyFileOrDir:launch andto:launchpath]){
+                                [[Youai_LOG shareSDK]printLog:@"修改LaunchImages成功"];
+                            }
+                        }
+                    }
+                }
+            }
+             [[Youai_LOG shareSDK]printLog:@"结束落"];
+        }else{
+            return NO;
+        }
+   
+    return YES;
+}
+
 -(BOOL)copyPyfileOrPoolsdk:(NSString *)MotherEngineeringPath andPoolsdkPath:(NSString *)sdkpath andPoolstingPath:(NSString *)path{
      [[Youai_LOG shareSDK]printLog:MotherEngineeringPath];
      _MotherEngineeringDirPath=MotherEngineeringPath;
@@ -261,6 +355,9 @@ static dbpzListview *selectins= nil;
                                 return NO;
                             }
                             
+                            
+                           
+                            
                         }
                         
                         
@@ -322,6 +419,18 @@ static dbpzListview *selectins= nil;
     }else{
        
     }
+}
+-(void)initResouceViewIconsPath:(NSTextField *)icons andLaunchImagesPath:(NSTextField *)imagesPath andSelectIcons:(NSButton *)selectIcons andSelectImagesPath:(NSButton *)selectImagesPath{
+    _IconsPath=icons;
+    _LaunchImagesPath=imagesPath;
+    _selectIconsPath=selectIcons;
+    _selectLaunchImagesPath=selectImagesPath;
+    [_selectIconsPath setAction:@selector(selectIconsPath:)];
+    [_selectIconsPath setTarget:self];
+    [_selectLaunchImagesPath setAction:@selector(selectLaunchImagesPath:)];
+    [_selectLaunchImagesPath setTarget:self];
+     [self hiddenview];
+    
 }
 -(void)initTypeSelectView:(NSButton *)app_store and:(NSButton *)ad_hoc and:(NSButton *)enterprise and:(NSButton *)development{
     _typeApp_store=app_store;
@@ -514,7 +623,7 @@ static dbpzListview *selectins= nil;
                      [[Youai_LOG shareSDK]printLog:@"拷贝成功"];
                     if ([self revisionsConfig:[motherEngineeringPath stringByDeletingLastPathComponent] and:[motherEngineeringPath lastPathComponent]]) {
                          [[Youai_LOG shareSDK]printLog:@"修改config.py成功"];
-                        
+                        [self copyIcansOrLaunchImages:[dic objectForKey:@"iconpath"] andLaunchpath:[dic objectForKey:@"imagelaunchpath"] andProjectPath:[motherEngineeringPath stringByDeletingLastPathComponent]];
                         NSString *cmd=[NSString stringWithFormat:@"cd %@\n python %@.py",[motherEngineeringPath stringByDeletingLastPathComponent],_chanelName];
                         NSString *result=[[commandUtils shareSDK]executeCommand:cmd];
                         [[Youai_LOG shareSDK]printLog:result];
@@ -624,6 +733,10 @@ static dbpzListview *selectins= nil;
     if ([self copyPyfileOrPoolsdk:[_MotherEngineeringPath.stringValue stringByDeletingLastPathComponent]andPoolsdkPath:_poolsdkPath andPoolstingPath:_pool_setingPath]) {
         //TODO
         [[Youai_LOG shareSDK]printLog:@"拷贝成功"];
+        
+        [self copyIcansOrLaunchImages:_IconsPath.stringValue andLaunchpath:_LaunchImagesPath.stringValue andProjectPath:[_MotherEngineeringPath.stringValue stringByDeletingLastPathComponent]];
+        
+        
         if ([self revisionsConfig:[_MotherEngineeringPath.stringValue stringByDeletingLastPathComponent] and:[_MotherEngineeringPath.stringValue lastPathComponent]]) {
              [[Youai_LOG shareSDK]printLog:@"修改config.py成功"];
             NSString *cmd=[NSString stringWithFormat:@"cd %@\n python %@.py",[_MotherEngineeringPath.stringValue stringByDeletingLastPathComponent],_chanelName];
@@ -635,6 +748,7 @@ static dbpzListview *selectins= nil;
                  system([[@"open " stringByAppendingString:[NSString stringWithFormat:@"%@/%@",NSHomeDirectory(),@"poolsdk_file/LOG"]] UTF8String]);
                 return;
             }
+            
             if (result!=nil&&![result isEqualToString:@""]) {
                 
                 NSString *name=[[_MotherEngineeringPath.stringValue lastPathComponent] stringByDeletingPathExtension];
@@ -788,7 +902,7 @@ static dbpzListview *selectins= nil;
         debugMode=@"0";
     }
     
-_dic=@{@"computerUserName":_ComputerUserName.stringValue,@"ipaDir":_ipaDir.stringValue,@"computerUserPassword":_ComputerUserPassword.stringValue,@"ipaPackages":_ipaPackages.stringValue,@"certificate":_certificate.stringValue,@"certificatePassword":_certificatePassword.stringValue,@"gamePyPath":_gamePyPath.stringValue,@"motherEngineeringPath":_MotherEngineeringPath.stringValue,@"uuid":_UUID,@"profilename":_profilename,@"projectTarget":_projectTarget.stringValue,@"typeMode":_typeMode,@"bundleid":_bundleID.stringValue,@"signingCertificate":_signingCertificate,@"paramsPath":_path,@"debug":debugMode};
+    _dic=@{@"computerUserName":_ComputerUserName.stringValue,@"ipaDir":_ipaDir.stringValue,@"computerUserPassword":_ComputerUserPassword.stringValue,@"ipaPackages":_ipaPackages.stringValue,@"certificate":_certificate.stringValue,@"certificatePassword":_certificatePassword.stringValue,@"gamePyPath":_gamePyPath.stringValue,@"motherEngineeringPath":_MotherEngineeringPath.stringValue,@"uuid":_UUID,@"profilename":_profilename,@"projectTarget":_projectTarget.stringValue,@"typeMode":_typeMode,@"bundleid":_bundleID.stringValue,@"signingCertificate":_signingCertificate,@"paramsPath":_path,@"debug":debugMode,@"iconpath":_IconsPath.stringValue,@"imagelaunchpath":_LaunchImagesPath.stringValue};
     _data=[NSJSONSerialization dataWithJSONObject:_dic options:NSJSONWritingPrettyPrinted error:nil];
     
     [[Youai_LOG shareSDK]printLog:_path];
@@ -818,6 +932,8 @@ _dic=@{@"computerUserName":_ComputerUserName.stringValue,@"ipaDir":_ipaDir.strin
     _certificate.stringValue=@"";
     _certificatePassword.stringValue=@"";
    _bundleID.stringValue=@"";
+    _IconsPath.stringValue=@"";
+    _LaunchImagesPath.stringValue=@"";
 }
 -(void)clearAllparams{
     _ComputerUserName.stringValue=@"";
@@ -830,6 +946,8 @@ _dic=@{@"computerUserName":_ComputerUserName.stringValue,@"ipaDir":_ipaDir.strin
     _MotherEngineeringPath.stringValue=@"";
     _projectTarget.stringValue=@"";
     _bundleID.stringValue=@"";
+    _IconsPath.stringValue=@"";
+    _LaunchImagesPath.stringValue=@"";
 }
 -(void)isEditable{
     _isSave=NO;
@@ -837,6 +955,8 @@ _dic=@{@"computerUserName":_ComputerUserName.stringValue,@"ipaDir":_ipaDir.strin
     _ipaDir.editable=YES;
     _ComputerUserPassword.editable=YES;
     _ipaPackages.editable=YES;
+     _IconsPath.editable=YES;
+     _LaunchImagesPath.editable=YES;
     _certificate.editable=YES;
     _certificatePassword.editable=YES;
     _bundleID.editable=YES;
@@ -847,7 +967,8 @@ _dic=@{@"computerUserName":_ComputerUserName.stringValue,@"ipaDir":_ipaDir.strin
     _selectCertificatePath.hidden=NO;
     _selectIpaDirPath.hidden=NO;
     _selectMotherEngineeringPath.hidden=NO;
-    
+    _selectIconsPath.hidden=NO;
+    _selectLaunchImagesPath.hidden=NO;
     if (_save!=nil) {
         _save.title=@"保存配置";
     }
@@ -861,6 +982,8 @@ _dic=@{@"computerUserName":_ComputerUserName.stringValue,@"ipaDir":_ipaDir.strin
     _ipaPackages.editable=NO;
     _certificate.editable=NO;
     _certificatePassword.editable=NO;
+    _IconsPath.editable=NO;
+    _LaunchImagesPath.editable=NO;
     _gamePyPath.editable=NO;
     _bundleID.editable=NO;
     _MotherEngineeringPath.editable=NO;
@@ -869,7 +992,8 @@ _dic=@{@"computerUserName":_ComputerUserName.stringValue,@"ipaDir":_ipaDir.strin
     _selectCertificatePath.hidden=YES;
     _selectIpaDirPath.hidden=YES;
     _selectMotherEngineeringPath.hidden=YES;
-    
+    _selectIconsPath.hidden=YES;
+    _selectLaunchImagesPath.hidden=YES;
 }
 -(void)initview:(NSTextField *)ComputerUserName and:(NSTextField *)ipaDir and:(NSTextField *)ComputerUserPassword and:(NSTextField *)ipaPackages and:(NSTextField *)certificate and:(NSTextField *)certificatePassword and:(NSTextField *)gamePyPath and:(NSTextField *)MotherEngineeringPath andProjectTarget:(NSTextField *)target andDundleID:(NSTextField *)bundleid{
     _ComputerUserName=ComputerUserName;
@@ -958,6 +1082,8 @@ _dic=@{@"computerUserName":_ComputerUserName.stringValue,@"ipaDir":_ipaDir.strin
     _MotherEngineeringPath.hidden=YES;
     _projectTarget.hidden=YES;
     _bundleID.hidden=YES;
+    _IconsPath.hidden=YES;
+    _LaunchImagesPath.hidden=YES;
 }
 
 -(void)showview{
@@ -971,6 +1097,8 @@ _dic=@{@"computerUserName":_ComputerUserName.stringValue,@"ipaDir":_ipaDir.strin
     _MotherEngineeringPath.hidden=NO;
      _projectTarget.hidden=NO;
     _bundleID.hidden=NO;
+    _IconsPath.hidden=NO;
+    _LaunchImagesPath.hidden=NO;
 }
 - (void)tableView:(NSTableView *)tableView didClickTableColumn:(NSTableColumn *)tableColumn{
     
@@ -993,21 +1121,29 @@ _dic=@{@"computerUserName":_ComputerUserName.stringValue,@"ipaDir":_ipaDir.strin
         }
 
          [[Youai_LOG shareSDK]printLog:dic];
-        _ComputerUserName.stringValue=[dic objectForKey:@"computerUserName"];
-        _ipaDir.stringValue=[dic objectForKey:@"ipaDir"];
-         _ComputerUserPassword.stringValue=[dic objectForKey:@"computerUserPassword"];
-         _ipaPackages.stringValue=[dic objectForKey:@"ipaPackages"];
-        _certificate.stringValue=[dic objectForKey:@"certificate"];
-         _certificatePassword.stringValue=[dic objectForKey:@"certificatePassword"];
-         _gamePyPath.stringValue=[dic objectForKey:@"gamePyPath"];
-        _MotherEngineeringPath.stringValue=[dic objectForKey:@"motherEngineeringPath"];
-        _UUID=[dic objectForKey:@"uuid"];
-        _projectTarget.stringValue=[dic objectForKey:@"projectTarget"];
-        _typeMode=[dic objectForKey:@"typeMode"];
-        _bundleID.stringValue=[dic objectForKey:@"bundleid"];
-        _signingCertificate=[dic objectForKey:@"signingCertificate"];
+        _ComputerUserName.stringValue=[self checkNull:[dic objectForKey:@"computerUserName"]];
+        _ipaDir.stringValue=[self checkNull:[dic objectForKey:@"ipaDir"]];
+         _ComputerUserPassword.stringValue=[self checkNull:[dic objectForKey:@"computerUserPassword"]];
+         _ipaPackages.stringValue=[self checkNull:[dic objectForKey:@"ipaPackages"]];
+        _certificate.stringValue=[self checkNull:[dic objectForKey:@"certificate"]];
+         _certificatePassword.stringValue=[self checkNull:[dic objectForKey:@"certificatePassword"]];
+         _gamePyPath.stringValue=[self checkNull:[dic objectForKey:@"gamePyPath"]];
+        _MotherEngineeringPath.stringValue=[self checkNull:[dic objectForKey:@"motherEngineeringPath"]];
+        _UUID=[self checkNull:[dic objectForKey:@"uuid"]];
+        _projectTarget.stringValue=[self checkNull:[dic objectForKey:@"projectTarget"]];
+        _typeMode=[self checkNull:[dic objectForKey:@"typeMode"]];
+        _bundleID.stringValue=[self checkNull:[dic objectForKey:@"bundleid"]];
+        _signingCertificate=[self checkNull:[dic objectForKey:@"signingCertificate"]];
+        _IconsPath.stringValue=[self checkNull:[dic objectForKey:@"iconpath"]];
+        _LaunchImagesPath.stringValue=[self checkNull:[dic objectForKey:@"imagelaunchpath"]];
     }
   
+}
+-(NSString *)checkNull:(NSString *)val{
+    if (val==nil) {
+        return @"";
+    }
+    return val;
 }
 // 选中的响应
 -(void)tableViewSelectionDidChange:(nonnull NSNotification* )notification{

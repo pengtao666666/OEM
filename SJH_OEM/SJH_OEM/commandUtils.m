@@ -112,12 +112,18 @@ static commandUtils *selectins= nil;
    NSString *paths=[NSString stringWithFormat:@"%@/%@",ipapath,@"mode"];
 //    NSString *cmd=[NSString stringWithFormat:@"cd %@\n rm -Rf build\n xcodebuild -project %@ -schemo %@ -configuration %@ -sdk iphoneos\n xcrun -sdk iphoneos packageapplication -v %@ -o %@",projectPath,project,target,mode,apppa,ipapath];
 //     [[Youai_LOG shareSDK]printLog:@"得到的结果:" andmsg:[self executeCommand:cmd]];
-    NSString *copypath=[NSString stringWithFormat:@"%@/%@/%@",ipapath,bundle,@"ExportOptions.plist"];
-    NSString *cmd=[NSString stringWithFormat:@"cd %@\n rm -Rf build\n xcodebuild archive -workspace %@/project.xcworkspace -scheme %@ -configuration %@ -archivePath %@\n xcodebuild -exportArchive -archivePath %@ -exportPath %@ -exportOptionsPlist %@\n cd %@\n cp ./mode/Apps/%@.ipa ./%@.ipa\n rm -Rf ./mode",projectPath,project,target,mode,apppa,apppa,paths,copypath,ipapath,target,name];
-    [[Youai_LOG shareSDK]printLog:cmd];
     
+    NSString *getTargetInfoCmd=[NSString stringWithFormat:@"cd %@\n xcodebuild archive -workspace %@/project.xcworkspace -list",projectPath,project];
+     [[Youai_LOG shareSDK]printLog:getTargetInfoCmd];
+    [[Youai_LOG shareSDK]printLog:[self executeCommand:getTargetInfoCmd]];
+    NSString *copypath=[NSString stringWithFormat:@"%@/%@/%@",ipapath,bundle,@"ExportOptions.plist"];
+    NSString *cmd=[NSString stringWithFormat:@"cd %@\n rm -Rf build\n xcodebuild archive -workspace %@/project.xcworkspace -scheme '%@' -configuration %@ -archivePath %@\n xcodebuild -exportArchive -archivePath %@ -exportPath %@ -exportOptionsPlist %@\n cd %@\n cp ./mode/Apps/%@.ipa ./%@.ipa\n rm -Rf ./mode",projectPath,project,target,mode,apppa,apppa,paths,copypath,ipapath,target,name];
+    [[Youai_LOG shareSDK]printLog:cmd];
+//    [[Youai_LOG shareSDK]printLog:[self executeCommand:cmd]];
     return [self executeCommand:cmd];
 }
+
+
 @end
 
 

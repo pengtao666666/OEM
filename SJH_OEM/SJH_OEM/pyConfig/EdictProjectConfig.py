@@ -52,6 +52,14 @@ def replaceSignAndProvision_dis():
     countSign = 0
     for line in alllines:
         #find channel type line
+        sb = re.findall("CODE_SIGN_STYLE", line)
+        if len(sb) > 0:
+            posEnd = line.rfind(";");
+            posStart = line.rfind("=");
+            subString = line[posStart + 2:posEnd]
+            line = line.replace(subString, "Manual")
+            print line
+            countSign = countSign + 1
         sb = re.findall("CODE_SIGN_IDENTITY", line)
         if len(sb) > 0:
             posEnd = line.rfind(";");

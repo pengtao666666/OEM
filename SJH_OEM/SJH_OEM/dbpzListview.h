@@ -21,6 +21,7 @@
 -(NSString *)getFilePath:(NSString *)file;
 -(void)onEditing:(NSButton *)view;
 -(void)initMoreAutoPackingView:(NSButton *)button;
+-(void)initResouceViewIconsPath:(NSTextField *)icons andLaunchImagesPath:(NSTextField *)imagesPath andSelectIcons:(NSButton *)selectIcons andSelectImagesPath:(NSButton *)selectImagesPath;
 -(void)initTypeSelectView:(NSButton *)app_store and:(NSButton *)ad_hoc and:(NSButton *)enterprise and:(NSButton *)development;
 -(void)initButtonView:(NSButton *)selectCertificatePath and:(NSButton *)selectIpaDirPath and:(NSButton *)selectGamePyPath and:(NSButton *)selectMotherEngineeringPath and:(NSButton *)ManualPacking and:(NSButton *)AutoPacking  and:(NSButton *)StratPacking and:(NSButton *)debug and:(NSButton *)release;
 @end

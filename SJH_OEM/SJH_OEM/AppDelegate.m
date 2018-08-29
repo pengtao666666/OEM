@@ -14,6 +14,7 @@
 #import "selectGameView.h"
 #import "SDKManagerView.h"
 #import "dbpzListview.h"
+#import "FileUtils.h"
 @interface AppDelegate ()<NSTabViewDelegate,NSTableViewDataSource,NSSearchFieldDelegate>
 @property (weak) IBOutlet NSTextField *UserNameField;
 @property (weak) IBOutlet NSTextField *PassWordField;
@@ -84,6 +85,12 @@
 @property (weak) IBOutlet NSButton *Release;
 @property (weak) IBOutlet NSButton *Debug;
 @property (weak) IBOutlet NSTextField *projectTarget;
+@property (weak) IBOutlet NSTextField *IconsPath;
+@property (weak) IBOutlet NSTextField *LaunchImagesPath;
+@property (weak) IBOutlet NSButton *selectIconsPath;
+@property (weak) IBOutlet NSButton *selectLaunchImagesPath;
+
+
 
 @property (weak) IBOutlet NSButton *typeApp_store;
 @property (weak) IBOutlet NSButton *typeAd_hoc;
@@ -235,6 +242,19 @@ NSTextField *sdktextField2;
     [[self sdkDownloadWindow]orderOut:nil];
      [[self sdkpzWindow]orderOut:nil];//隐藏sdk配置界面
      [[self dbpzWindow]orderOut:nil];
+    
+    
+    NSString *userPath=[NSString stringWithFormat:@"%@/poolsdk_file/USERFILE/userfile",NSHomeDirectory()];
+    [[Youai_LOG shareSDK] printLog:userPath];
+    if([[FileUtils shareSDK]checkIsFile:userPath]){
+        NSString *content = [NSString stringWithContentsOfFile:userPath encoding:NSUTF8StringEncoding error:nil];
+        
+        NSDictionary *dic=[self dictionaryWithJsonString:content];
+        _UserNameField.stringValue=[dic objectForKey:@"username"];
+        _PassWordField.stringValue=[dic objectForKey:@"password"];
+    }
+    
+    
 }
 
 -(IBAction)gotoSDKDownloadWindow:(id)sender{//跳转到SDK管理页面
@@ -324,6 +344,7 @@ NSTextField *sdktextField2;
     [[dbpzListview shareSDK]initview:_ComputerUserName and:_ipaDir and:_ComputerUserPassword and:_ipaPackages and:_certificate and:_certificatePassword and:_gamePyPath and:_MotherEngineeringPath andProjectTarget:_projectTarget andDundleID:_bundleID];
  
     [[dbpzListview shareSDK]initButtonView:_selectCertificatePath and:_selectIpaDirPath and:_selectGamePyPath and:_selectMotherEngineeringPath and:_ManualPacking and:_AutoPacking and:_StratPacking and:_Debug and:_Release];
+    [[dbpzListview shareSDK]initResouceViewIconsPath:_IconsPath andLaunchImagesPath:_LaunchImagesPath andSelectIcons:_selectIconsPath andSelectImagesPath:_selectLaunchImagesPath];
 }
 
 -(IBAction)retrunsdkpzwindow:(id)sender{//打包配置里返回sdk参数配置页面
@@ -446,23 +467,37 @@ NSTextField *sdktextField2;
     [[Youai_LOG shareSDK] printLog:@"点击了登陆接口"];
     NSNumber *ch=@(_ischeck.state) ;
     [[Youai_LOG shareSDK] printLog:[ch stringValue]];
-    
-    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
-    NSString *name = [userDefaults objectForKey:@"username"];
+   
     [[Youai_LOG shareSDK] printLog:_PassWordField.stringValue];
     if (!([_UserNameField.stringValue isEqualToString:@""]||_UserNameField.stringValue==nil)) {
         if (!([_PassWordField.stringValue isEqualToString:@""]||_PassWordField.stringValue==nil)) {
             _TStext.stringValue=@"";
-            
+            NSString *userFilePath=[NSString stringWithFormat:@"%@/poolsdk_file/USERFILE",NSHomeDirectory()];
+            NSString *userFile=[NSString stringWithFormat:@"%@/userfile",userFilePath];
             if (_ischeck.state) {
-                [userDefaults setObject:_UserNameField.stringValue forKey:@"username"];
-                [userDefaults synchronize];
+              
+                if(![[FileUtils shareSDK]checkIsDir:userFilePath]){
+                    [[FileUtils shareSDK]createDirectoryAtPath:userFilePath];
+                }
+                if([[FileUtils shareSDK]checkIsFile:userFile]){
+                    [[FileUtils shareSDK]removeFileOrDir:userFile];
+                }
+                NSDictionary *dic=@{@"username":_UserNameField.stringValue,@"password":_PassWordField.stringValue};
+                
+                [[FileUtils shareSDK]createfileAtpath:userFile andData:[NSJSONSerialization dataWithJSONObject:dic options:NSJSONWritingPrettyPrinted error:nil]];
+                
             }else{
-                [userDefaults setObject:@"" forKey:@"username"];
-                [userDefaults synchronize];
+               
+                 NSDictionary *dic=@{@"username":@"",@"password":@""};
+                if(![[FileUtils shareSDK]checkIsDir:userFilePath]){
+                    [[FileUtils shareSDK]createDirectoryAtPath:userFilePath];
+                }
+                if([[FileUtils shareSDK]checkIsFile:userFile]){
+                    [[FileUtils shareSDK]removeFileOrDir:userFile];
+                }
+                 [[FileUtils shareSDK]createfileAtpath:userFile andData:[NSJSONSerialization dataWithJSONObject:dic options:NSJSONWritingPrettyPrinted error:nil]];
             }
-            name=[userDefaults objectForKey:@"username"];
-            _UserNameField.stringValue=name;
+         
             BOOL ok=[self loginCheck:gameListUrl];
             if (ok) {
                 //跳转到下一页
@@ -490,7 +525,7 @@ NSTextField *sdktextField2;
         _TStext.stringValue=@"用户名不允许为空！请重新输入";
     }
     
-    [[Youai_LOG shareSDK] printLog:name];
+//    [[Youai_LOG shareSDK] printLog:name];
     
     
 }
